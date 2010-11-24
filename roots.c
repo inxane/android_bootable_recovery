@@ -121,7 +121,7 @@ int create_mknods(int n) {
 				fclose(f);
 				continue;
 			}
-			sprintf(mknod_cmd,"/xbin/mknod /dev/loop%d b 7 %d",i,i);
+			sprintf(mknod_cmd,"/bin/mknod /dev/loop%d b 7 %d",i,i);
 			if ( __system(mknod_cmd) ) {
 				fprintf(stderr,"Can't create mknods:%s\n",strerror(errno));
 				err=1;
@@ -150,7 +150,7 @@ static void check_fs() {
 			  if ( !strncmp(info->device,"/sdcard/",8) ) {
 				  char check_cmd[PATH_MAX];
 				  create_mtab();
-				  sprintf(check_cmd,"/xbin/e2fsck -fyc %s",info->device);
+				  sprintf(check_cmd,"/sbin/e2fsck -fyc %s",info->device);
 				  __system(check_cmd);
 				  ensure_root_path_unmounted(info->name); //Just in case e2fsck mounted it
 				  strcpy(info->filesystem,"ext4");
@@ -166,7 +166,7 @@ static void check_fs() {
 				  else {
 					  char check_cmd[PATH_MAX];
 					  create_mtab();
-					  sprintf(check_cmd,"/xbin/e2fsck -fyc %s",info->device);
+					  sprintf(check_cmd,"/sbin/e2fsck -fyc %s",info->device);
 					  __system(check_cmd);
 					  ensure_root_path_unmounted(info->name); //Just in case e2fsck mounted it
 					  if ( !mount(info->device, info->mount_point, "ext2", MS_NODEV | MS_NOSUID | MS_NOATIME | MS_NODIRATIME, NULL)) {
@@ -501,26 +501,26 @@ format_root_device(const char *root)
 	                create_mtab();
 		         LOGW("format: %s as %s\n", info->device, info->filesystem);
 	                if (strncmp(info->filesystem, "ext4",4) == 0) {					
-						///xbin/mke2fs -T ext4 -F -q -m 0 -b 4096 -O ^huge_file,extent /sdcard/cm6/data.img
-	                   char* args[] = {"/xbin/mke2fs", fst, "-F", "-q", "-m 0", "-b 4096", "-O ^huge_file,extent", info->device, NULL};
-	                   execv("/xbin/mke2fs", args);
+						///sbin/mke2fs -T ext4 -F -q -m 0 -b 4096 -O ^huge_file,extent /sdcard/cm6/data.img
+	                   char* args[] = {"/sbin/mke2fs", fst, "-F", "-q", "-m 0", "-b 4096", "-O ^huge_file,extent", info->device, NULL};
+	                   execv("/sbin/mke2fs", args);
 	                } else {
-	                   char* args[] = {"/xbin/mke2fs", fst, "-F", "-q", "-m 0", "-b 4096", info->device, NULL};
-	                   execv("/xbin/mke2fs", args);
+	                   char* args[] = {"/sbin/mke2fs", fst, "-F", "-q", "-m 0", "-b 4096", info->device, NULL};
+	                   execv("/sbin/mke2fs", args);
 	                }
 	                LOGE("E:Can't run mke2fs format [%s]\n", strerror(errno));       
 		     } 
 		     else if (info->filesystem != NULL && strcmp(info->filesystem, "rfs")==0){
 		          LOGW("format: %s as rfs\n", info->device);
-	                 char* args[] = {"/xbin/stl.format", info->device, NULL};
-	                 execv("/xbin/stl.format", args);
+	                 char* args[] = {"/sbin/stl.format", info->device, NULL};
+	                 execv("/sbin/stl.format", args);
 	                 fprintf(stderr, "E:Can't run STL format [%s]\n", strerror(errno));
 	            }
 	         else {
 				 //We couldn't detect FS, so formatting as default RFS
 				 LOGW("Fallback format: %s as rfs\n", info->device);
-	                 char* args[] = {"/xbin/stl.format", info->device, NULL};
-	                 execv("/xbin/stl.format", args);
+	                 char* args[] = {"/sbin/stl.format", info->device, NULL};
+	                 execv("/sbin/stl.format", args);
 	                 fprintf(stderr, "E:Can't run STL format [%s]\n", strerror(errno));
 				}
 	        _exit(-1);

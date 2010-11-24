@@ -99,29 +99,29 @@ void ui_reset_progress();
 #endif
 
 // Dream-specific key codes by LeshaK
-// Modify for Samsung Spica i5700
+// Modified for M900 by inxane
 
-#define KEY_DREAM_HOME        227  // = KEY_HOME
-#define KEY_DREAM_RED         249  // = KEY_END
-#define KEY_DREAM_VOLUMEDOWN  209  // = KEY_VOLUMEDOWN
-#define KEY_DREAM_VOLUMEUP    201  // = KEY_VOLUMEUP
+#define KEY_DREAM_HOME        102  // = KEY_HOME
+#define KEY_DREAM_RED         249 // = KEY_END
+#define KEY_DREAM_VOLUMEDOWN  25  // = KEY_VOLUMEDOWN
+#define KEY_DREAM_VOLUMEUP    17  // = KEY_VOLUMEUP
 #define KEY_DREAM_SYM         127  // = KEY_COMPOSE
-#define KEY_DREAM_MENU        211  // = KEY_MENU
-#define KEY_DREAM_BACK        212  // = KEY_BACK
-#define KEY_DREAM_FOCUS       211  // = KEY_HP (light touch on camera)
-#define KEY_DREAM_CAMERA      250  // = KEY_CAMERA
+#define KEY_DREAM_MENU        139  // = KEY_MENU
+#define KEY_DREAM_BACK        158  // = KEY_BACK
+#define KEY_DREAM_FOCUS       1  // = KEY_HP (light touch on camera)
+#define KEY_DREAM_CAMERA      57  // = KEY_CAMERA
 #define KEY_DREAM_AT          215  // = KEY_EMAIL
 #define KEY_DREAM_GREEN       231
 #define KEY_DREAM_FATTOUCH    258  // = BTN_2 ???
 #define KEY_DREAM_BALL        272  // = BTN_MOUSE
 #define KEY_DREAM_TOUCH       330  // = BTN_TOUCH
 
-// For Samsung by LeshaK
-#define KEY_I5700_CENTER      204
-#define KEY_I5700_DOWN	      210
-#define KEY_I5700_UP          202
-#define KEY_I5700_LEFT		  218  //For horizontal scrolling
-#define KEY_I5700_RIGHT		  203
+// For Samsung by inxane
+#define KEY_I5700_CENTER      41
+#define KEY_I5700_DOWN	      108
+#define KEY_I5700_UP          103
+#define KEY_I5700_LEFT		  105  //For horizontal scrolling
+#define KEY_I5700_RIGHT		  106
 
 //Redefine defaults
 #undef KEY_HOME
