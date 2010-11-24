@@ -524,10 +524,10 @@ static void end_recovery() {
 static void init_os (char** items,int boot) {    
     if ( !strlen(os) ) {
 				RootInfo* info=get_root_info_for_path("SYSTEM:");
-				info->device="/dev/stl6";
+				info->device="/dev/stl5";
 				
 				info=get_root_info_for_path("DATA:");
-				info->device="/dev/stl5";
+				info->device="/dev/stl6";
 				return;
 			}
 
@@ -575,10 +575,10 @@ void start_os() {
 			if (  ( f=fopen(file_name,"r") )  )	{
 				fclose(f); 
 				chdir(dir_name);
-				char *args[] = {"/xbin/ash", file_name, NULL};          
+				char *args[] = {"/bin/ash", file_name, NULL};          
 				pid_t pid = fork();
 				if (pid == 0) {
-					execv("/xbin/ash", args);
+					execv("/bin/ash", args);
 					fprintf(stderr, "E:Can't run %s\n(%s)\n",file_name, strerror(errno));
 					_exit(-1);
 					}
@@ -676,8 +676,8 @@ void show_wipe_menu() { //by LeshaK
                             ui_print("Formatting DATA:dalvik-cache..");
                             pid_t pid = fork();
                             if (pid == 0) {
-                                char *args[] = {"/xbin/rm", "-r", "/data/dalvik-cache", NULL};
-                                execv("/xbin/rm", args);
+                                char *args[] = {"/bin/rm", "-r", "/data/dalvik-cache", NULL};
+                                execv("/bin/rm", args);
                                 fprintf(stderr, "E:Can't wipe dalvik-cache\n(%s)\n", strerror(errno));
     	                        _exit(-1);
                             }
@@ -844,7 +844,7 @@ static char
         pre_menu()
 {
     static char* headers[] = { 	"     Boot loader by Xmister",
-                                "   -- Samsung Spica i5700 --",
+                                "   -- Samsung Moment M900 --",
                                 "",
                                 "Use Up/Down and OK to select",
                                 "",

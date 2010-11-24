@@ -469,7 +469,7 @@ void show_choose_zip_menu()
 
 // This was pulled from bionic: The default system command always looks
 // for shell in /system/bin/sh. This is bad.
-#define _PATH_BSHELL "/xbin/busybox"
+#define _PATH_BSHELL "/bin/sh"
 
 extern char **environ;
 int
@@ -996,7 +996,7 @@ static int
         return 2;
     }
 
-    strcat(path, "samdroid/");
+    strcat(path, "sdx/");
 
     dir = opendir(path);
     if (dir == NULL) {
@@ -1150,7 +1150,7 @@ static void
                             }
                         }
 						case BRTYPE_RESTORE:
-                        strcpy(sfpath, "/sdcard/samdroid/");
+                        strcpy(sfpath, "/sdcard/sdx/");
                         strcat(sfpath, st);
 
                         ui_print("\nMount ");
@@ -1172,9 +1172,9 @@ static void
                         pid_t pid = fork();
                         if (pid == 0) {
                             chdir("/");
-                            char *args[] = {"/xbin/tar", "-x","-f", sfpath, NULL};
-                            execv("/xbin/tar", args);
-                            fprintf(stderr, "E:Can't restore\n(%s)\n", strerror(errno));
+                            char *args[] = {"/bin/tar", "-x","-f", sfpath, NULL};
+                            execv("/bin/tar", args);
+                            fprintf(stderr, "E:Can't backup\n(%s)\n", strerror(errno));
                             _exit(-1);
                         }
 
@@ -1235,25 +1235,26 @@ static void
                 case BRTYPE_B_EFS:
 					if (sdcard_free_mb < 20 ) return print_and_error("You should have at least 20MB free on your SD card\n");
                     ui_print("\nBacking up: ");
+
                     ui_print(backup_parts[chosen_item]);
                     ui_print("\n");
 
                     // create backup folder
-                    mkdir("/sdcard/samdroid", 0777);
+                    mkdir("/sdcard/sdx", 0777);
 
                     // create file name
                     time_t rawtime;
                     struct tm * ti;
                     time ( &rawtime );
                     ti = localtime ( &rawtime );
-                    strftime(st,255,"/sdcard/samdroid/Backup_%Y%m%d-%H%M%S_",ti);
+                    strftime(st,255,"/sdcard/sdx/Backup_%Y%m%d-%H%M%S_",ti);
                     strcat(st, backup_file[chosen_item]);
                     strcat(st, ".tar");
 
                     pid_t pid = fork();
                     if (pid == 0) {
-                        char *args[] = {"/xbin/busybox", "tar", "-c", "--exclude=*RFS_LOG.LO*", "-f", st, backup_parts[chosen_item], NULL};
-                        execv("/xbin/busybox", args);
+                        char *args[] = {"/sbin/busybox", "tar", "-c", "--exclude=*RFS_LOG.LO*", "-f", st, backup_parts[chosen_item], NULL};
+                        execv("/sbin/busybox", args);
                         fprintf(stderr, "E:Can't backup\n(%s)\n", strerror(errno));
                         _exit(-1);
                     }
@@ -1528,6 +1529,7 @@ char* keyboard(char* title, char* buffer, int buf_len) {
 }
 
 void show_terminal() {
+
 	char* headers[]={ "Terminal",
 					 "",
 					 NULL,
@@ -1584,7 +1586,7 @@ void show_terminal() {
 	}
 	free(headers[2]);
 	headers[2]=NULL;
-	
+
 }
 		
 
@@ -1636,7 +1638,7 @@ void convert_menu()
         convert_zip(sdcard_package_file);
 }
 
-static void samdroid_backup()
+static void sdx_backup()
 {
 	if (ensure_root_path_mounted("SDCARD:") != 0) {
 		ui_print("Can't mount sdcard\n");
@@ -1644,9 +1646,9 @@ static void samdroid_backup()
 		ui_print("\nPerforming backup");
 		pid_t pid = fork();
 		if (pid == 0) {
-			char *args[] = {"/xbin/bash", "-c", "/xbin/samdroid backup", "1>&2", NULL};
-			execv("/xbin/bash", args);
-			fprintf(stderr, "E:Can't run samdroid\n(%s)\n", strerror(errno));
+			char *args[] = {"/bin/ash", "-c", "/sbin/sdx backup", "1>&2", NULL};
+			execv("/bin/ash", args);
+			fprintf(stderr, "E:Can't run sdx\n(%s)\n", strerror(errno));
 			_exit(-1);
 		}
 
@@ -1659,7 +1661,7 @@ static void samdroid_backup()
 		ui_print("\n");
 
 		if (!WIFEXITED(status) || (WEXITSTATUS(status) != 0)) {
-			ui_print("Error running samdroid backup. Backup not performed.\n\n");
+			ui_print("Error running sdx backup. Backup not performed.\n\n");
 		} else {
 			ui_print("Backup complete!\nUse Odin for restore\n\n");
 		}
@@ -1679,9 +1681,9 @@ void image_restore() {
     if (ensure_root_path_mounted("SDCARD:") != 0)
         return print_and_error("Can't mount sdcard\n");
 
-    if ( chdir("/sdcard/samdroid/image") ) return print_and_error("Directory doesn't exist!\n");
+    if ( chdir("/sdcard/sdx/image") ) return print_and_error("Directory doesn't exist!\n");
 
-    char* file = choose_file_menu("/sdcard/samdroid/image/", ".img", headers);
+    char* file = choose_file_menu("/sdcard/sdx/image/", ".img", headers);
     if (file == NULL)
         return;
 	char* start=strrchr(file,'_')+1;
@@ -1699,7 +1701,7 @@ void image_restore() {
 		pid_t pid=fork();
 		if (pid == 0) {
 			char cmd[PATH_MAX];
-			sprintf(cmd,"/xbin/dd if=\"%s\" of=\"%s\"",file,info->device);
+			sprintf(cmd,"/bin/dd if=\"%s\" of=\"%s\"",file,info->device);
 			if ( __system(cmd) ) {
 				fprintf(stderr,"Can't Restore!\n%s\n",strerror(errno));
 					_exit(2);
@@ -1736,8 +1738,8 @@ void image_backup() {
     if (ensure_root_path_mounted("SDCARD:") != 0)
         return print_and_error("Can't mount sdcard\n");
 
-    if ( chdir("/sdcard/samdroid/image") )
-		if ( __system("/xbin/mkdir -p /sdcard/samdroid/image") ) return print_and_error("Can't create directory!\n");
+    if ( chdir("/sdcard/sdx/image") )
+		if ( __system("/bin/mkdir -p /sdcard/sdx/image") ) return print_and_error("Can't create directory!\n");
 
 
 	for(;;) {
@@ -1783,10 +1785,10 @@ void image_backup() {
 			struct tm * ti;
 			time ( &rawtime );
 			ti = localtime ( &rawtime );
-			strftime(st,PATH_MAX,"/sdcard/samdroid/image/IMG_%Y%m%d-%H%M%S_",ti);
+			strftime(st,PATH_MAX,"/sdcard/sdx/image/IMG_%Y%m%d-%H%M%S_",ti);
 			sprintf(st,"%s%s%s",st,part,".img");
 			char cmd[PATH_MAX];
-			sprintf(cmd,"/xbin/dd if=\"%s\" of=\"%s\"",info->device,st);
+			sprintf(cmd,"/bin/dd if=\"%s\" of=\"%s\"",info->device,st);
 			ui_print("Backing up..");
 			if (ensure_root_path_mounted("SDCARD:") != 0) //Just to be sure
 				return print_and_error("Can't mount sdcard\n");
@@ -1804,7 +1806,9 @@ void image_backup() {
 				ui_print(".");
 				sleep(1);
 			}
-			if ( WEXITSTATUS(status) == 2 ) return print_and_error("\nBacking up failed!\n");
+
+			if ( WEXITSTATUS(status) == 2 ) return print_and_error("\nBackup failed!\n");
+
 			else {
 				ui_print("\nBackup Finished!\n");
 				return;
@@ -1853,7 +1857,7 @@ void show_backup_menu()
     };
 
     static char* list[] = { "TAR Backup", 
-                            "Samdroid Backup (Odin)",
+                            "sdx Backup (Odin)",
                             "Image Backup",
                             NULL
     };
@@ -1867,7 +1871,7 @@ void show_backup_menu()
 				tar_backup();
 				break;
 			case 1:
-				samdroid_backup();
+				sdx_backup();
 				break;
 			case 2:
 				show_image_menu();
@@ -1974,8 +1978,8 @@ void show_fs_select(RootInfo* info)
 		if (confirm_wipe == KEY_DREAM_HOME) {
 			ui_print("\nPlease wait..");
 				struct stat st;
-				if(stat("/sdcard/samdroid",&st)) {
-					mkdir("/sdcard/samdroid",0777);
+				if(stat("/sdcard/sdx",&st)) {
+					mkdir("/sdcard/sdx",0777);
 				}
 				if (ensure_root_path_mounted(info->name)) {
 					err=1;
@@ -1987,7 +1991,7 @@ void show_fs_select(RootInfo* info)
 				strcpy(old,info->filesystem);
 				strcpy(new,list[chosen_item]);
 				char backup[PATH_MAX];
-				sprintf(backup,"/sdcard/samdroid/Backup_%s_%sTO%s.tar",&(info->mount_point[1]),old,new);
+				sprintf(backup,"/sdcard/sdx/Backup_%s_%sTO%s.tar",&(info->mount_point[1]),old,new);
 				FILE* f=fopen(backup,"r");
 				if ( f != NULL ) {
 					fclose(f);
@@ -1995,8 +1999,8 @@ void show_fs_select(RootInfo* info)
 				}
 				char cmd[PATH_MAX];
 				if ( strcmp(info->name,"CACHE:") ) {
-					ui_print("\nBacking up");
-					sprintf(cmd,"/xbin/tar -c --exclude=*RFS_LOG.LO* -f %s %s",backup,info->mount_point);
+					ui_print("\nBackup");
+					sprintf(cmd,"/bin/tar -c --exclude=*RFS_LOG.LO* -f %s %s",backup,info->mount_point);
 					pid_t pid=fork();
 					if (pid==0) {
 						_exit(__system(cmd));
@@ -2007,9 +2011,9 @@ void show_fs_select(RootInfo* info)
 						ui_print(".");
 						sleep(1);
 					}
-					if ( WEXITSTATUS(status) != 0 )  err=1;
-					if ( err ) return print_and_error("\nBacking up failed!\n");
-					
+					if ( WEXITSTATUS(status) == 2 )  err=1;
+					if ( err ) return print_and_error("\nBackup failed!\n");
+			
 				}
 				if (ensure_root_path_unmounted(info->name)) {
 					err=1;
@@ -2033,7 +2037,7 @@ void show_fs_select(RootInfo* info)
 				if ( strcmp(info->name,"CACHE:") ) {
 					chdir("/");
 					ui_print("\nRestoring");
-					sprintf(cmd,"/xbin/tar -x -f %s",backup);
+					sprintf(cmd,"/bin/tar -x -f %s",backup);
 					pid_t pid = fork();
 					if (pid == 0) {
 						if (__system(cmd)) {
@@ -2248,7 +2252,7 @@ int e2fsck(char* name) {
 	RootInfo* info=get_root_info_for_path(name);
 	if (!ensure_root_path_unmounted(name)) {
 		char cmd[PATH_MAX];
-		sprintf(cmd,"/xbin/e2fsck -fyc %s",info->device);
+		sprintf(cmd,"/sbin/e2fsck -fyc %s",info->device);
 		__system(cmd);
 		return 0;
 	} else return 1;

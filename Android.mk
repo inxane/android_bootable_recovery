@@ -21,6 +21,7 @@ LOCAL_SRC_FILES := \
 LOCAL_SRC_FILES += \
     reboot.c \
     setprop.c
+BOARD_HAS_NO_MISC_PARTITION := true
 
 ifndef BOARD_HAS_NO_MISC_PARTITION
     LOCAL_SRC_FILES += \
@@ -44,7 +45,8 @@ LOCAL_MODULE := recovery
 
 LOCAL_FORCE_STATIC_EXECUTABLE := true
 
-RECOVERY_VERSION := CM Recovery v2.5.1.0 & LK+XM0.6
+
+RECOVERY_VERSION := CM Recovery v2.5.1.0 & SDX 0.3
 LOCAL_CFLAGS += -DRECOVERY_VERSION="$(RECOVERY_VERSION)"
 RECOVERY_API_VERSION := 2
 LOCAL_CFLAGS += -DRECOVERY_API_VERSION=$(RECOVERY_API_VERSION)
@@ -171,7 +173,7 @@ ALL_DEFAULT_INSTALLED_MODULES += $(SYMLINKS)
 # Now let's do recovery symlinks
 #BUSYBOX_LINKS := $(shell cat external/busybox/busybox-minimal.links)
 #SYMLINKS := $(addprefix $(TARGET_RECOVERY_ROOT_OUT)/sbin/,$(filter-out $(exclude),$(notdir $(BUSYBOX_LINKS))))
-#$(SYMLINKS): BUSYBOX_BINARY := /xbin/busybox
+#$(SYMLINKS): BUSYBOX_BINARY := /sbin/busybox
 #$(SYMLINKS): $(LOCAL_INSTALLED_MODULE)
 #	@echo "Symlink: $@ -> $(BUSYBOX_BINARY)"
 #	@mkdir -p $(dir $@)
