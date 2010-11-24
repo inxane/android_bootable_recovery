@@ -1140,11 +1140,11 @@ static void
 								uint64_t sdcard_free = bavail * bsize;
 								uint64_t sdcard_free_mb = sdcard_free / (uint64_t)(1024 * 1024);
 								if (sdcard_free_mb < 20 ) return print_and_error("You should have at least 20MB free on your SD card\n");
-								if (chdir("/sdcard/samdroid/image")) {
-									__system("mkdir -p /sdcard/samdroid/image");
+								if (chdir("/sdcard/sdx/image")) {
+									__system("mkdir -p /sdcard/sdx/image");
 								}
-								unlink("/sdcard/samdroid/image/before_tar_restore.img");
-								if (!__system("dd if=/dev/stl10 of=/sdcard/samdroid/image/efs_before_tar_restore.img")) {
+								unlink("/sdcard/sdx/image/before_tar_restore.img");
+								if (!__system("dd if=/dev/stl10 of=/sdcard/sdx/image/efs_before_tar_restore.img")) {
 									if (format_root_device("EFS:")) return print_and_error("Can't format EFS\n");
 								}	
                             }
