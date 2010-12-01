@@ -2381,7 +2381,7 @@ void show_xm_menu()
 
 void show_advanced_menu()
 {
-#define XMISTER 1
+#define XMISTER 0
     static char* headers[] = {  "Advanced and Debugging Menu",
                                 "",
                                 NULL
