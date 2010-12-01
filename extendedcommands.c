@@ -2040,11 +2040,7 @@ void show_fs_select(RootInfo* info)
 					sprintf(cmd,"/bin/tar -x -f %s",backup);
 					pid_t pid = fork();
 					if (pid == 0) {
-						if (__system(cmd)) {
-							fprintf(stderr,"Can't restore:\n%s",strerror(errno));
-							_exit(2);
-						}
-						_exit(-1);
+						_exit(__system(cmd));
 					}
 
 					int status;
@@ -2291,10 +2287,101 @@ void show_fs_check()
 	}
 }
 
-        
+void show_xm_menu()
+{
+	static char* headers[] = {  "Kernel Tuning",
+                                "",
+                                NULL
+    };
+    struct dirent **filelist = {0};
+	char *directory = ".";
+	int fcount = -1;
+	int i = 0;
+	int j = 0;
+	char* temp;
+	char line[5];
+	FILE* f;
+
+	if ( ensure_root_path_mounted("SYSTEM:") ) return print_and_error("Can't mount SYSTEM\n");
+
+	chdir("/proc/xmister");
+	
+	fcount = scandir(directory, &filelist, 0, alphasort);
+
+	char** list=malloc((fcount+1)*sizeof(char*));
+	
+	for(i = 0; i < fcount; ++i)  {
+		if ( strchr(filelist[i]->d_name,'.') != NULL ) continue;
+		list[j]=malloc( (strlen(filelist[i]->d_name)+10) * sizeof(char) );
+		strcpy(list[j], filelist[i]->d_name);
+		free(filelist[i]);
+		temp=malloc(sizeof(char)*(strlen(list[j])+strlen("/system/xmister/")+1));
+		sprintf(temp,"/system/xmister/%s",list[j]);
+		f=fopen(temp,"r");
+		if ( f == NULL ) f=fopen(list[j],"r");
+		if ( f == NULL ) return print_and_error("Can't open property!\n");
+		if ( fscanf(f,"%s",line) < 1 ) {
+			fclose(f);
+			return print_and_error("Can't read property!\n");
+		}
+		fclose(f);
+		free(temp);
+		sprintf(list[j],"%s(%s)",list[j],line);
+		++j;
+	}
+	list[j]=NULL;
+	free(filelist);
+
+	for ( ;; ) {
+		int chosen_item = get_menu_selection(headers,list,0);
+		if ( chosen_item == GO_BACK ) break;
+		char buffer[PATH_MAX];
+		keyboard("New Value",buffer,PATH_MAX);
+		char* p = strchr(list[chosen_item],'(');
+		temp=calloc(strlen(list[chosen_item]),sizeof(char));
+		strncpy(temp,list[chosen_item],p-list[chosen_item]);
+		if ( (f=fopen(temp,"w")) == NULL ) return print_and_error("Can't open proc file for write!\n");
+		if ( fputs(buffer,f) < 0 ) {
+			fclose(f);
+			return print_and_error("Can't write proc file!\n");
+		}
+		fclose(f);
+
+		//Returning the proc file content
+		if ( (f=fopen(temp,"r")) == NULL ) return print_and_error("Can't open proc file for read!\n");
+		if ( fgets(line,5,f) == NULL ) {
+			fclose(f);
+			return print_and_error("Can't read proc file!\n");
+		}
+		fclose(f);
+		sprintf(list[chosen_item],"%s(%s)",temp,line);
+		if ( chdir("/system/xmister") ) {
+			if (mkdir("/system/xmister",0777) ) return print_and_error("Can't create driectory for properties!\n");
+		}
+		chdir("/proc/xmister");
+		char* temp2=malloc(sizeof(char)*(strlen(temp)+strlen("/system/xmister/")+1));
+		sprintf(temp2,"/system/xmister/%s",temp);
+		free(temp);
+		FILE* f=fopen(temp2,"w");
+		free(temp2);
+		if ( f == NULL ) return print_and_error("Can't open property for write!\n");
+		if ( fputs(line,f) < 0 ) {
+			fclose(f);
+			return print_and_error("Can't write property file!\n");
+		}
+		fclose(f);
+	}
+		
+	
+	chdir("/");
+}
+    
+    
+     
 
 void show_advanced_menu()
 {
+#define XMISTER 1
     static char* headers[] = {  "Advanced and Debugging Menu",
                                 "",
                                 NULL
@@ -2307,6 +2394,9 @@ void show_advanced_menu()
                             "Recovery Password",
                             "Terminal",
                             "FS error check",
+#ifdef XMISTER                            
+                            "Kernel tuning",
+#endif                            
 #ifndef BOARD_HAS_SMALL_RECOVERY
                             "Partition SD Card",
                             "Fix Permissions",
@@ -2347,7 +2437,10 @@ void show_advanced_menu()
 			case 6:
 				show_fs_check();
 				break;
-            case 7:
+			case 7:
+				show_xm_menu();
+				break;
+            case 8:
             {
                 static char* ext_sizes[] = { "128M",
                                              "256M",
@@ -2388,7 +2481,7 @@ void show_advanced_menu()
                     ui_print("An error occured while partitioning your SD Card. Please see /tmp/recovery.log for more details.\n");
                 break;
             }
-            case 8:
+            case 9:
             {
                 ensure_root_path_mounted("SYSTEM:");
                 ensure_root_path_mounted("DATA:");
