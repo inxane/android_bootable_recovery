@@ -1969,6 +1969,9 @@ void show_fs_select(RootInfo* info)
 		if (chosen_item == GO_BACK)
             break;
         ui_end_menu();
+        char check_cmd[PATH_MAX];
+        sprintf(check_cmd,"cat /init.rc | grep -i 'mount %s %s'",list[chosen_item],info->device);
+        if ( __system(check_cmd) ) return print_and_error("Sorry, your kernel doesn't support the filesystem you've choosen.\n");
 		ui_print("\n-- This method can be dangerous!");
 		ui_print("\n-- %s to %s on %s",info->filesystem,list[chosen_item],info->name);
 		ui_print("\n-- It is going to be very long!");
@@ -2289,6 +2292,7 @@ void show_fs_check()
 
 void show_xm_menu()
 {
+	#define XM_SAVE_DIR "/data/misc/xmister/"
 	static char* headers[] = {  "Kernel Tuning",
                                 "",
                                 NULL
@@ -2302,7 +2306,15 @@ void show_xm_menu()
 	char line[5];
 	FILE* f;
 
-	if ( ensure_root_path_mounted("SYSTEM:") ) return print_and_error("Can't mount SYSTEM\n");
+	//Mount the partition we will actually use for properties
+	//if ( ensure_root_path_mounted("SYSTEM:") ) return print_and_error("Can't mount SYSTEM\n");
+	if ( ensure_root_path_mounted("DATA:") ) return print_and_error("Can't mount DATA\n");
+
+	if ( chdir(XM_SAVE_DIR) ) {
+		char cmd[PATH_MAX];
+		sprintf(cmd,"mkdir -p %s",XM_SAVE_DIR);
+		if ( __system(cmd) ) return print_and_error("Can't open property dir!\n");
+	}
 
 	chdir("/proc/xmister");
 	
@@ -2315,8 +2327,8 @@ void show_xm_menu()
 		list[j]=malloc( (strlen(filelist[i]->d_name)+10) * sizeof(char) );
 		strcpy(list[j], filelist[i]->d_name);
 		free(filelist[i]);
-		temp=malloc(sizeof(char)*(strlen(list[j])+strlen("/system/xmister/")+1));
-		sprintf(temp,"/system/xmister/%s",list[j]);
+		temp=malloc(sizeof(char)*(strlen(list[j])+strlen(XM_SAVE_DIR)+1));
+		sprintf(temp,"%s%s",XM_SAVE_DIR,list[j]);
 		f=fopen(temp,"r");
 		if ( f == NULL ) f=fopen(list[j],"r");
 		if ( f == NULL ) return print_and_error("Can't open property!\n");
@@ -2355,12 +2367,9 @@ void show_xm_menu()
 		}
 		fclose(f);
 		sprintf(list[chosen_item],"%s(%s)",temp,line);
-		if ( chdir("/system/xmister") ) {
-			if (mkdir("/system/xmister",0777) ) return print_and_error("Can't create driectory for properties!\n");
-		}
 		chdir("/proc/xmister");
-		char* temp2=malloc(sizeof(char)*(strlen(temp)+strlen("/system/xmister/")+1));
-		sprintf(temp2,"/system/xmister/%s",temp);
+		char* temp2=malloc(sizeof(char)*(strlen(temp)+strlen(XM_SAVE_DIR)+1));
+		sprintf(temp2,"%s%s",XM_SAVE_DIR,temp);
 		free(temp);
 		FILE* f=fopen(temp2,"w");
 		free(temp2);
