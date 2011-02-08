@@ -97,10 +97,9 @@ int res_create_surface(const char* name, gr_surface* pSurface) {
     int color_type = info_ptr->color_type;
     int bit_depth = info_ptr->bit_depth;
     int channels = info_ptr->channels;
-    if (!(bit_depth == 8 &&
-          ((channels == 3 && color_type == PNG_COLOR_TYPE_RGB) ||
-           (channels == 4 && color_type == PNG_COLOR_TYPE_RGBA) ||
-           (channels == 1 && color_type == PNG_COLOR_TYPE_PALETTE)))) {
+    if (bit_depth != 8 || (channels != 3 && channels != 4) ||
+        (color_type != PNG_COLOR_TYPE_RGB &&
+         color_type != PNG_COLOR_TYPE_RGBA)) {
         return -7;
         goto exit;
     }
@@ -118,10 +117,6 @@ int res_create_surface(const char* name, gr_surface* pSurface) {
     surface->data = pData;
     surface->format = (channels == 3) ?
             GGL_PIXEL_FORMAT_RGBX_8888 : GGL_PIXEL_FORMAT_RGBA_8888;
-
-    if (color_type == PNG_COLOR_TYPE_PALETTE) {
-      png_set_palette_to_rgb(png_ptr);
-    }
 
     int y;
     if (channels == 3) {

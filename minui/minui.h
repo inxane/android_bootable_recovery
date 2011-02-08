@@ -41,6 +41,30 @@ unsigned int gr_get_height(gr_surface surface);
 // see http://www.mjmwired.net/kernel/Documentation/input/ for info.
 struct input_event;
 
+// Dream-specific key codes
+// Modify for Samsung Moment SPH-M900
+
+#define KEY_DREAM_HOME        102  // = KEY_HOME
+#define KEY_DREAM_RED         249  // = KEY_END
+#define KEY_DREAM_VOLUMEDOWN   25  // = KEY_VOLUMEDOWN
+#define KEY_DREAM_VOLUMEUP     17  // = KEY_VOLUMEUP
+#define KEY_DREAM_SYM         127  // = KEY_COMPOSE
+#define KEY_DREAM_MENU        139  // = KEY_MENU
+#define KEY_DREAM_BACK        158  // = KEY_BACK
+#define KEY_DREAM_CAMERA       57  // = KEY_CAMERA
+#define KEY_DREAM_FOCUS         1  // = KEY_HP
+#define KEY_DREAM_AT          215  // = KEY_EMAIL
+#define KEY_DREAM_GREEN       231
+#define KEY_DREAM_FATTOUCH    258  // = BTN_2 ???
+#define KEY_DREAM_BALL        272  // = BTN_MOUSE
+#define KEY_DREAM_TOUCH       330  // = BTN_TOUCH
+#define KEY_MOMENT_VOICE       10
+
+// For Samsung
+#define KEY_I5700_CENTER       41
+#define KEY_I5700_DOWN	      210
+#define KEY_I5700_UP          202
+
 int ev_init(void);
 void ev_exit(void);
 int ev_get(struct input_event *ev, unsigned dont_wait);
