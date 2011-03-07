@@ -41,7 +41,6 @@
 
 #include "extendedcommands.h"
 #include "nandroid.h"
-static int do_reboot = 1;
 
 static const char *SDCARD_PATH = "SDCARD:";
 #define SDCARD_PATH_LENGTH 7
@@ -1533,10 +1532,63 @@ char* keyboard(char* title, char* buffer, int buf_len) {
 
 void show_terminal() {
 
-	                ui_print("\n");
-		    	do_reboot = 0;
-		    	system("echo 1 > /sys/class/leds/keyboard-backlight/brightness");
+	char* headers[]={ "Terminal",
+					 "",
+					 NULL,
+					 NULL
+	};
+	char* list[]={ "Keyboard",
+				   "Run",
+				   NULL
+	};
+	headers[2]=calloc(PATH_MAX,sizeof(char));
+	for(;;) {
+		int chosen_item=get_menu_selection(headers,list,0);
+		if ( chosen_item == GO_BACK ){
+			free(headers[2]);
+			headers[2]=NULL;
+			return 0;
+		}
+		switch (chosen_item) {
+			case 0:
+				keyboard("Terminal",headers[2],PATH_MAX);
+				break;
+			case 1:
+				ui_print("Executing command..");
+				freopen("/command_output", "w", stdout); setbuf(stdout, NULL);
+				freopen("/command_output", "a", stderr); setbuf(stderr, NULL);
+				pid_t pid=fork();
+				if ( pid == 0 ) {
+					if ( __system(headers[2]) ) {
+						fprintf(stderr,"%s",strerror(errno));
+						_exit(2);
+					}
+					_exit(-1);
+				}
+				int status;
+				while (waitpid(pid, &status, WNOHANG) == 0) {
+					ui_print(".");
+					sleep(1);
+				}
+				ui_print("\n");
+				freopen("/tmp/recovery.log", "a", stdout); setbuf(stdout, NULL);
+				freopen("/tmp/recovery.log", "a", stderr); setbuf(stderr, NULL);
+				FILE* f=fopen("/command_output","r");
+				if ( f != NULL ) {
+					char s[PATH_MAX];
+					while (!feof(f)) {
+						if ( fgets(s,PATH_MAX,f) != NULL )
+							ui_print("%s",s);
+					}
+					fclose(f);
+				}
 
+				break;
+		}
+	}
+	free(headers[2]);
+	headers[2]=NULL;
+	
 }
 		
 
